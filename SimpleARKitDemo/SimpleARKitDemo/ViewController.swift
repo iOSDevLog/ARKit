@@ -17,6 +17,7 @@ class ViewController: UIViewController {
         super.viewDidLoad()
         
         addBox()
+        addTapGestureToSceneView()
     }
 
     override func viewWillAppear(_ animated: Bool) {
@@ -40,6 +41,28 @@ class ViewController: UIViewController {
 
         sceneView.scene.rootNode.addChildNode(boxNode)
     }
-
+    
+    func addTapGestureToSceneView() {
+        let tapGestureRecognizer = UITapGestureRecognizer(target: self, action: #selector(ViewController.didTap(withGestureRecognizer:)))
+        sceneView.addGestureRecognizer(tapGestureRecognizer)
+    }
+    
+    @objc func didTap(withGestureRecognizer recognizer: UIGestureRecognizer) {
+        let tapLocation = recognizer.location(in: sceneView)
+        let hitTestResults = sceneView.hitTest(tapLocation)
+        
+        guard let node = hitTestResults.first?.node else {
+            let hitTestResultsWithFeaturePoints = sceneView.hitTest(tapLocation, types: .featurePoint)
+            
+            if let hitTestResultWithFeaturePoints = hitTestResultsWithFeaturePoints.first {
+                let translation = hitTestResultWithFeaturePoints.worldTransform.translation
+                addBox(x: translation.x, y: translation.y, z: translation.z)
+            }
+            
+            return
+        }
+        
+        node.removeFromParentNode()
+    }
 }
 
